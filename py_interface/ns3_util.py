@@ -22,6 +22,7 @@ import subprocess
 import time
 from collections import OrderedDict
 from copy import copy
+from glob import glob
 
 import psutil
 
@@ -111,19 +112,25 @@ def build_ns3(path):
     return ok
 
 
-def run_single_ns3(path, pname, setting=None, env=None, show_output=False, build=True):
-    if build and not build_ns3(path):
-        return None
+def run_single_ns3(path, pname, setting=None, env=None, show_output=False, debug=False):
     if env:
         env.update(os.environ)
     env['LD_LIBRARY_PATH'] = os.path.abspath(os.path.join(path, 'build', 'lib'))
-    if not setting:
-        cmd = './{}'.format(pname)
+    if debug:
+        exec_path = os.path.join(path, 'build', 'debug', 'scratch')
     else:
-        cmd = './{}{}'.format(pname, get_setting(setting))
-    exec_path = os.path.join(path, 'build', 'scratch')
+        exec_path = os.path.join(path, 'build', 'scratch')
     if os.path.isdir(os.path.join(exec_path, pname)):
         exec_path = os.path.join(exec_path, pname)
+    if debug:
+        filename = glob(os.path.join(exec_path, 'ns3*-debug'))
+    else:
+        filename = glob(os.path.join(exec_path, 'ns3*-optimized'))
+    filename = os.path.basename(filename[0])
+    if not setting:
+        cmd = f'./{filename}'
+    else:
+        cmd = f'./{filename}{get_setting(setting)}'
     if show_output:
         proc = subprocess.Popen(
             cmd, shell=True, universal_newlines=True, cwd=exec_path, env=env)
@@ -150,4 +157,4 @@ def run_bulk_ns3(path, pname, commons, settings, debug=False):
 
 
 __all__ = ['cpu_num', 'cder', 'get_free_cpu', 'kill_proc_tree',
-           'get_settings', 'get_setting', 'build_ns3', 'run_single_ns3']
+           'get_settings', 'get_setting', 'run_single_ns3']
