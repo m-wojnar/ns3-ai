@@ -122,10 +122,13 @@ def run_single_ns3(path, pname, setting=None, env=None, show_output=False, debug
         exec_path = os.path.join(path, 'build', 'scratch')
     if os.path.isdir(os.path.join(exec_path, pname)):
         exec_path = os.path.join(exec_path, pname)
-    if debug:
-        filename = glob(os.path.join(exec_path, 'ns3*-debug'))
+        sim_name = ''
     else:
-        filename = glob(os.path.join(exec_path, 'ns3*-optimized'))
+        sim_name = pname
+    if debug:
+        filename = glob(os.path.join(exec_path, f'ns3*{sim_name}-debug'))
+    else:
+        filename = glob(os.path.join(exec_path, f'ns3*{sim_name}-optimized'))
     filename = os.path.basename(filename[0])
     if not setting:
         cmd = f'./{filename}'
